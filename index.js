@@ -96,6 +96,8 @@ function spawnPhantomJS(givenUrl, args, options, cb) {
 
   phantomjs.stderr.pipe(process.stderr);
 
+  handleUnixSignals(phantomjs, cb);
+
   phantomjs.on('error', function (err) {
     cb(new gutil.PluginError(pluginName, err.message));
   });
@@ -114,6 +116,41 @@ function spawnPhantomJS(givenUrl, args, options, cb) {
     });
   });
 }
+
+function handleUnixSignals(phantomjs, done) {
+  phantomjs.on('SIGQUIT', function() {
+    done(new gutil.PluginError(pluginName, 'SIGQUIT: PhantomJS process quit.'));
+  });
+
+  phantomjs.on('SIGTERM', function() {
+    done(new gutil.PluginError(pluginName, 'SIGTERM: PhantomJS process terminated.'));
+  });
+
+  phantomjs.on('SIGINT', function() {
+    done(new gutil.PluginError(pluginName, 'SIGINT: PhantomJS process was interrupted.'));
+  });
+
+  phantomjs.on('SIGSYS', function() {
+    done(new gutil.PluginError(pluginName, 'SIGSYS: PhantomJS process made a bad system call.'));
+  });
+
+  phantomjs.on('SIGABRT', function() {
+    done(new gutil.PluginError(pluginName, 'SIGABRT: PhantomJS process was aborted.'));
+  });
+
+  phantomjs.on('SIGHUP', function() {
+    done(new gutil.PluginError(pluginName, 'SIGHUP: PhantomJS process was interrupted.'));
+  });
+
+  phantomjs.on('SIGFPE', function() {
+    done(new gutil.PluginError(pluginName, 'SIGFPE: PhantomJS process executed erroneous operation.'));
+  });
+
+  phantomjs.on('SIGSEGV', function() {
+    done(new gutil.PluginError(pluginName, 'SIGSEGV: PhantomJS process segfaulted.'));
+  });
+  return phantomjs;
+};
 
 function lookup(path, isExecutable) {
   for (var i = 0 ; i < module.paths.length; i++) {
