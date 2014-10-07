@@ -60,8 +60,11 @@ function mochaPhantomJS(options) {
 }
 
 function spawnPhantomJS(givenUrl, args, options, cb) {
-  // in case npm is started with --no-bin-links
-  var phantomjsPath = lookup('.bin/phantomjs', true) || lookup('phantomjs/bin/phantomjs', true),
+  var phantomJsOptions = options.phantomjs || {},
+      // in case npm is started with --no-bin-links
+      phantomjsPath = phantomJsOptions.binaryPath ||
+        lookup('.bin/phantomjs', true) ||
+        lookup('phantomjs/bin/phantomjs', true),
       dump = options.output,
       transform = options.transform ?
         options.transform.enabled : false,
@@ -69,7 +72,7 @@ function spawnPhantomJS(givenUrl, args, options, cb) {
         options.transform.outputFilter : function() { return true; };
 
 
-  if (!phantomjsPath) {
+  if (!phantomjsPath || !fs.existsSync(phantomjsPath)) {
     return cb(new gutil.PluginError(pluginName, 'PhantomJS not found'));
   }
 
